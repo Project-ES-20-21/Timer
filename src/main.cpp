@@ -153,8 +153,16 @@ void loop() {
       m--;
       s=59;  
     } else {
-      // end event
-      }
+    display.rawDigit(0, 0b00111101);
+    display.rawDigit(1, 0b01110111);
+    display.rawDigit(2, 0b00110111);
+    display.rawDigit(3, 0b01111001);
+    delay(1000);
+    display.rawDigit(0, 0b00111111);
+    display.rawDigit(1, 0b00111110);
+    display.rawDigit(2, 0b01111001);
+    display.rawDigit(3, 0b01010000);
+    }
   
     long now = millis();
     if (now - lastMsg > 5000)
