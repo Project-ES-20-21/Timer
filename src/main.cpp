@@ -11,6 +11,7 @@
 
 bool connected;
 bool gestart;
+bool setupt;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -42,19 +43,21 @@ void setup_wifi()
 }
 
 // Connect display pins to the ESP32 DIGITAL pins
-#define TM1637_CLK_PIN      2
-#define TM1637_DIO_PIN      4
+#define TM1637_CLK_PIN      22
+#define TM1637_DIO_PIN      23
 
 // Create display object
 RobotDyn4DigitDisplay display(TM1637_CLK_PIN, TM1637_DIO_PIN);
 
 int m;
 int s;
+int temp;
 
 void setup()
 {
     connected = false;
     gestart = true;
+    setupt = false;
     //setup wifi
     Serial.begin(115200);
 
@@ -87,12 +90,17 @@ void callback(char *topic, byte *message, unsigned int length)
   Serial.println();
 
   // Feel free to add more if statements to control more GPIOs with MQTT
-  // When receiving a message on "esp32/control" a check should be excecuted
+  // When receiving a message on "esp32/+/control" a check should be excecuted
 
   // If a message is received on the topic esp32/control, you check if the message is either "start" or "stop" (or "reset").
   // Changes the state according to the message
   if (String(topic) == "esp32/timer/control")
   {
+    if(setupt){
+      m=messageTemp.toInt();
+      setupt = false;
+      gestart=true;
+      }
     if(messageTemp.equals("start")){
       gestart=true;
     }
@@ -104,6 +112,13 @@ void callback(char *topic, byte *message, unsigned int length)
       m=60;
       s=0;
       display.time(m,s,true,false);
+    }
+    if(messageTemp.equals("timeset")){
+      if(!setupt){
+        setupt = true;
+        gestart = false;
+      }
+      else{setupt = false; gestart=true;}
     }
   }
 }
@@ -140,11 +155,11 @@ void reconnect()
 
 void loop() {
   if (!connected)
-  {
+    {
     reconnect();
-  }
+    }
   client.loop();
-    
+  
   if(gestart){
     display.time(m,s,true,false);
     if(s!=0){
@@ -153,16 +168,18 @@ void loop() {
       m--;
       s=59;  
     } else {
-    display.rawDigit(0, 0b00111101);
-    display.rawDigit(1, 0b01110111);
-    display.rawDigit(2, 0b00110111);
-    display.rawDigit(3, 0b01111001);
-    delay(1000);
-    display.rawDigit(0, 0b00111111);
-    display.rawDigit(1, 0b00111110);
-    display.rawDigit(2, 0b01111001);
-    display.rawDigit(3, 0b01010000);
-    }
+      display.rawDigit(0, 0b00111101);
+      display.rawDigit(1, 0b01110111);
+      display.rawDigit(2, 0b00110111);
+      display.rawDigit(3, 0b01111001);
+      delay(1000);
+      display.rawDigit(0, 0b00111111);
+      display.rawDigit(1, 0b00111110);
+      display.rawDigit(2, 0b01111001);
+      display.rawDigit(3, 0b01010000);
+      }
+    
+    
   
     long now = millis();
     if (now - lastMsg > 5000)
