@@ -1,6 +1,12 @@
 #include <ErriezRobotDyn4DigitDisplay.h>
+#include "Arduino.h"
 #include "WiFi.h"
 #include "PubSubClient.h" //pio lib install "knolleary/PubSubClient"
+
+// OTA packages
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
 
 //define router and broker
 #define SSID          "NETGEAR68"
@@ -19,6 +25,9 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 
+// OTA server
+AsyncWebServer server(80);
+
 //define callback method
 void callback(char *topic, byte *message, unsigned int length);
 
@@ -28,6 +37,7 @@ void setup_wifi()
   delay(10);
   Serial.println("Connecting to WiFi..");
 
+  WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PWD);
 
   while (WiFi.status() != WL_CONNECTED)
@@ -64,6 +74,16 @@ void setup()
     setup_wifi();
     client.setServer(MQTT_SERVER, MQTT_PORT);
     client.setCallback(callback);
+
+    // Initialize OTA handler
+
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Hi! I am ESP32 timer.");
+    });
+
+    AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+    server.begin();
+    Serial.println("HTTP server started");
     
     // Initialize TM1637
     display.begin();
