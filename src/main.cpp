@@ -17,7 +17,6 @@
 
 bool connected;
 bool gestart;
-bool setupt;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -53,21 +52,20 @@ void setup_wifi()
 }
 
 // Connect display pins to the ESP32 DIGITAL pins
-#define TM1637_CLK_PIN      22
-#define TM1637_DIO_PIN      23
+#define TM1637_CLK_PIN      23
+#define TM1637_DIO_PIN      22
 
 // Create display object
 RobotDyn4DigitDisplay display(TM1637_CLK_PIN, TM1637_DIO_PIN);
 
-int m;
-int s;
+uint8_t m;
+uint8_t s;
 int temp;
 
 void setup()
 {
     connected = false;
     gestart = true;
-    setupt = false;
     //setup wifi
     Serial.begin(115200);
 
@@ -114,13 +112,17 @@ void callback(char *topic, byte *message, unsigned int length)
 
   // If a message is received on the topic esp32/control, you check if the message is either "start" or "stop" (or "reset").
   // Changes the state according to the message
-  if (String(topic) == "esp32/timer/control")
-  {
-    if(setupt){
+  if(String(topic) == "esp32/timer/min"){
       m=messageTemp.toInt();
-      setupt = false;
-      gestart=true;
+      display.time(m,s,true,false);
       }
+  if(String(topic) == "esp32/timer/sec"){
+      s=messageTemp.toInt();
+      display.time(m,s,true,false);
+      }
+  if(String(topic) == "esp32/timer/control")
+  {
+    
     if(messageTemp.equals("start")){
       gestart=true;
     }
@@ -133,12 +135,8 @@ void callback(char *topic, byte *message, unsigned int length)
       s=0;
       display.time(m,s,true,false);
     }
-    if(messageTemp.equals("timeset")){
-      if(!setupt){
-        setupt = true;
-        gestart = false;
-      }
-      else{setupt = false; gestart=true;}
+    if(messageTemp.equals("hardreset")){
+      setup();
     }
   }
 }
@@ -159,7 +157,7 @@ void reconnect()
       // Publish
       client.publish("esp32/timer/control", "start");
       // ... and resubscribe
-      client.subscribe("esp32/timer/control");
+      client.subscribe("esp32/timer/#");
       Serial.print("gelukt");
     }
     else
@@ -186,7 +184,7 @@ void loop() {
       s--;  
     } else if(m!=0) {
       m--;
-      s=59;  
+      s=59;
     } else {
       display.rawDigit(0, 0b00111101);
       display.rawDigit(1, 0b01110111);
@@ -208,5 +206,5 @@ void loop() {
     }
   }
   delay(1000);
-
+  //Serial.println("I'm working");
 }
