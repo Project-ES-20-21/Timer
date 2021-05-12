@@ -195,6 +195,9 @@ void loop() {
       display.rawDigit(1, 0b00111110);
       display.rawDigit(2, 0b01111001);
       display.rawDigit(3, 0b01010000);
+      delay(1000);
+      client.publish("esp32/alohomora/control", "open");
+      client.subscribe("esp32/timer/#");
       }
     
     
