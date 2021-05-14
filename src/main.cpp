@@ -186,15 +186,17 @@ void loop() {
       m--;
       s=59;
     } else {
-      display.rawDigit(0, 0b00111101);
-      display.rawDigit(1, 0b01110111);
-      display.rawDigit(2, 0b00110111);
-      display.rawDigit(3, 0b01111001);
+      display.rawDigit(0, 0b00111101);  // G
+      display.rawDigit(1, 0b01110111);  // A
+      display.rawDigit(2, 0b00110111);  // M
+      display.rawDigit(3, 0b01111001);  // E
       delay(1000);
-      display.rawDigit(0, 0b00111111);
-      display.rawDigit(1, 0b00111110);
-      display.rawDigit(2, 0b01111001);
-      display.rawDigit(3, 0b01010000);
+      display.rawDigit(0, 0b00111111);  // O
+      display.rawDigit(1, 0b00111110);  // V
+      display.rawDigit(2, 0b01111001);  // E
+      display.rawDigit(3, 0b01010000);  // R
+      delay(1000);
+      client.publish("esp32/alohomora/control", "open");
       delay(1000);
       client.publish("esp32/alohomora/control", "open");
       client.subscribe("esp32/timer/#");
