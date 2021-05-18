@@ -136,7 +136,7 @@ void callback(char *topic, byte *message, unsigned int length)
       display.time(m,s,true,false);
     }
     if(messageTemp.equals("hardreset")){
-      setup();
+      ESP.restart();
     }
   }
 }
@@ -197,7 +197,7 @@ void loop() {
       display.rawDigit(3, 0b01010000);  // R
       delay(1000);
       client.publish("esp32/alohomora/control", "open");
-      delay(1000);
+      delay(5000);
       client.publish("esp32/alohomora/control", "open");
       client.subscribe("esp32/timer/#");
       }
